@@ -1,0 +1,115 @@
+using System;
+using System.Data.SqlTypes;
+using System.Linq;
+using System.Runtime.InteropServices;
+
+class LZ77
+{
+    public class shif
+    {
+        public int offset;
+        public int length;
+        public string next;
+
+    }
+
+    static public void shifLZ77()
+    {
+
+        List<shif> list = new List<shif>();
+        string buff = null;
+        Console.Write("Введите слово: ");
+        string slovo = Console.ReadLine();
+        int posSlov = 1;
+
+
+        buff = slovo.Substring(0, 1);
+        shif H = new shif();
+
+        H.next = slovo.Substring(0, 1);
+        H.length = 0;
+        H.offset = 0;
+
+        list.Add(H);
+        while (posSlov < slovo.Length)
+        {
+
+            int l;
+
+            for (l = Math.Min(buff.Length, slovo.Length - posSlov); l >= 1; l--)
+            {
+
+                string subst = slovo.Substring(posSlov, l);
+                int indx = buff.IndexOf(subst);
+
+                if (indx != -1)
+                {
+                    indx = 8 - buff.Length + indx;
+                    shif sub = new shif();
+                    sub.offset = indx;
+                    sub.length = l;
+
+                    if (posSlov + l > slovo.Length - 1)
+                    {
+
+                        if (buff.Length >= 8)
+                        {
+                            buff = buff.Remove(0, subst.Length);
+                        }
+                        sub.offset = 0;
+                        sub.length = 0;
+                        sub.next = slovo.Substring(posSlov, 1);
+                        buff = buff + sub.next;
+                        list.Add(sub);
+                        posSlov = posSlov + l + 1;
+                        break;
+                    }
+
+                    else
+                        sub.next = slovo.Substring(posSlov + l, 1);
+                    if (buff.Length + subst.Length >= 8)
+                    {
+                        if (buff.Length == 8)
+                        {
+                            buff = buff.Remove(0, sub.next.Length + subst.Length);
+                        }
+                        else
+                        {
+                            buff = buff.Remove(0, (sub.next.Length + subst.Length) - buff.Length);
+                        }
+                    }
+                    posSlov = posSlov + l + 1;
+                    buff = buff + subst + sub.next;
+                    list.Add(sub);
+                    break;
+
+                }
+            }
+            if (l == 0)
+            {
+                shif r = new shif();
+                r.next = slovo.Substring(posSlov, 1);
+                r.length = 0;
+                r.offset = 0;
+                if (buff.Length >= 8)
+                {
+                    buff = buff.Remove(0, 1);
+                }
+                list.Add(r);
+                buff = buff + slovo.Substring(posSlov, 1);
+                posSlov = posSlov + 1;
+            }
+
+        }
+        foreach (var s in list)
+        {
+            Console.WriteLine($"{s.offset},{s.length},{s.next}");
+        }
+    }
+
+
+    static void Main()
+    {
+        shifLZ77();   
+    }
+}
